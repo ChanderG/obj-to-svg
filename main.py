@@ -102,7 +102,7 @@ def calculateNormal(face, vertices):
     dir1_x, dir1_y, dir1_z = (vertices[b][0] - vertices[a][0]), (vertices[b][1] - vertices[a][1]), (vertices[b][2] - vertices[a][2])
     dir2_x, dir2_y, dir2_z = (vertices[c][0] - vertices[a][0]), (vertices[c][1] - vertices[a][1]), (vertices[c][2] - vertices[a][2])
 
-    x, y, z = (dir1_y*dir2_z - dir1_z*dir2_y), (dir1_z*dir2_x - dir2_z*dir1_x), (dir1_x*dir2_y - dir1_x*dir2_y)
+    x, y, z = (dir1_y*dir2_z - dir1_z*dir2_y), (dir1_z*dir2_x - dir2_z*dir1_x), (dir1_x*dir2_y - dir1_y*dir2_x)
     return (x, y, z)
 
 def dotProduct(vector1, vector2):
@@ -138,14 +138,10 @@ def backFaceCull(obj, params):
        view_ray =  (px - params["vx"], py - params["vy"], pz - params["vz"])
        normal = calculateNormal(f, vertices)
 
-       print view_ray, normal
-       print dotProduct(view_ray, normal)
        if dotProduct(view_ray, normal) < 0:
            newfaces.append(f)
 
-    print "{0} faces culled.".format(len(faces) - len(newfaces))
-    print faces
-    print newfaces
+    print "{0}/{1} faces culled.".format(len(faces) - len(newfaces), len(faces))
     obj["faces"] = newfaces
     return obj
 
