@@ -63,6 +63,92 @@ def loadObjectFromObj(filename):
 
   return obj
 
+def calculateCentroid(face, vertices):
+    """
+    Calculate centroid of face.
+    Face can be a 3-tuple( triangle ) or 4-tuple( square ).
+    Vertices is the record of all vertices.
+
+    Returns the 3 coordinates of the centroid.
+    """
+
+    if len(face) == 3:
+        a, b, c = face
+        x = (vertices[a][0] + vertices[b][0] + vertices[c][0])/3
+        y = (vertices[a][1] + vertices[b][1] + vertices[c][1])/3
+        z = (vertices[a][2] + vertices[b][2] + vertices[c][2])/3
+        return (x, y, z)
+
+    if len(face) == 4:
+        a, b, c, d = face
+        x = (vertices[a][0] + vertices[b][0] + vertices[c][0] + vertices[d][0])/4
+        y = (vertices[a][1] + vertices[b][1] + vertices[c][1] + vertices[d][1])/4
+        z = (vertices[a][2] + vertices[b][2] + vertices[c][2] + vertices[d][2])/4
+        return (x, y, z)
+
+def calculateNormal(face, vertices):
+    """
+    Calculate centroid of face.
+    Face can be a 3-tuple( triangle ) or 4-tuple( square ).
+    Vertices is the record of all vertices.
+
+    Returns the normal vector components along i, j and k.
+    """
+    if len(face) == 3:
+        a, b, c = face
+    if len(face) == 4:
+        a, b, c, d = face
+
+    dir1_x, dir1_y, dir1_z = (vertices[b][0] - vertices[a][0]), (vertices[b][1] - vertices[a][1]), (vertices[b][2] - vertices[a][2])
+    dir2_x, dir2_y, dir2_z = (vertices[c][0] - vertices[a][0]), (vertices[c][1] - vertices[a][1]), (vertices[c][2] - vertices[a][2])
+
+    x, y, z = (dir1_y*dir2_z - dir1_z*dir2_y), (dir1_z*dir2_x - dir2_z*dir1_x), (dir1_x*dir2_y - dir1_x*dir2_y)
+    return (x, y, z)
+
+def dotProduct(vector1, vector2):
+    """ Return dot product.
+
+    Input is represented in terms of 3-tuples.
+    """
+    x1, y1, z1 = vector1
+    x2, y2, z2 = vector2
+
+    return (x1*x2 + y1*y2 + z1*z2)
+
+def backFaceCull(obj, params):
+    """ Cull back faces. 
+
+    INPUT
+    -----
+    obj -- existing object structure
+    params -- gen params
+
+    OUPUT
+    -----
+    obj -- the updated object
+    """
+
+    # for each face, calculate normals, compare and remove if necessary
+    vertices = obj["vertices"]
+    faces = obj["faces"]
+    newfaces = []
+
+    for f in faces:
+       (px, py, pz) = calculateCentroid(f, vertices)
+       view_ray =  (px - params["vx"], py - params["vy"], pz - params["vz"])
+       normal = calculateNormal(f, vertices)
+
+       print view_ray, normal
+       print dotProduct(view_ray, normal)
+       if dotProduct(view_ray, normal) < 0:
+           newfaces.append(f)
+
+    print "{0} faces culled.".format(len(faces) - len(newfaces))
+    print faces
+    print newfaces
+    obj["faces"] = newfaces
+    return obj
+
 def convertToImage(params, filename):
   """ Convert obj object to svg image. 
   
@@ -76,6 +162,9 @@ def convertToImage(params, filename):
 
   # load object from obj file
   obj = loadObjectFromObj(filename)
+
+  print "Back face culling..."
+  obj = backFaceCull(obj, params)
 
 def main():
   """ Main runner. 
