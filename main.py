@@ -145,6 +145,75 @@ def backFaceCull(obj, params):
     obj["faces"] = newfaces
     return obj
 
+def ZwithFaceTuple(face, vertices):
+    """ Convert face to tuple with centroid Z.
+
+    face -- a single face
+    vertices -- the vertex set of object
+
+    Returns a tuple like: (z, face) where z is the z coordinate of face.
+    """
+
+    if len(face) == 3:
+        a, b, c = face
+        z = (vertices[a][2] + vertices[b][2] + vertices[c][2])/3
+    if len(face) == 4:
+        a, b, c, d = face
+        z = (vertices[a][2] + vertices[b][2] + vertices[c][2] + vertices[d][2])/4
+
+    return (z, face)
+
+def orderFacesPainters(obj):
+    """ Orders faces of a 3d object accordng to Painter's algorithm aka farthest z first.
+
+    obj -- the 3d object
+
+    Returns the faces in this order.
+    """
+    faceWithZ = map(lambda x: ZwithFaceTuple(x, obj["vertices"]), obj["faces"])
+
+    from operator import itemgetter
+    sorted_faceWithZ = sorted(faceWithZ, key=itemgetter(0))
+
+    sorted_faces = map(lambda (x, y): y, sorted_faceWithZ)
+    return sorted_faces
+
+def projectVerticesTo2D(vertices, params):
+    """ Project vertices to the XY plane.
+
+    Return the set of vertices on XY plane.
+    """
+    xv, yv, zv = params["vx"], params["vy"], params["vz"]
+
+    img_vertices = {}
+    for v_no, vertex in vertices.items():
+        x, y, z = vertex
+        x_ = (z*xv + x*zv)/(z + zv)
+        y_ = (z*yv + y*zv)/(z + zv)
+        img_vertices[v_no] = (x_, y_, 0)
+
+    return img_vertices
+
+def project2D(obj, params):
+    """ Project 3d object to 2d image. 
+    
+    obj -- the 3d object itself
+    params -- hash of params
+
+    Returns the 2d image structure with faces in the correct order.
+    """
+
+    # blindly convert 3d points to 2d set
+    img = {}
+
+    # first ready faces in correct order
+    img["faces"] = orderFacesPainters(obj)
+
+    # then convert 3d points to 2d
+    img["vertices"] = projectVerticesTo2D(obj["vertices"], params)
+
+    return img
+
 def convertToImage(params, filename):
   """ Convert obj object to svg image. 
   
@@ -161,6 +230,9 @@ def convertToImage(params, filename):
 
   print "Back face culling..."
   obj = backFaceCull(obj, params)
+
+  # project to 2d in the right order
+  img = project2D(obj, params)
 
 def main():
   """ Main runner. 
