@@ -42,21 +42,21 @@ def loadObjectFromObj(filename):
     l = filter(lambda x: x!= '', line.split(' '))
     # handle faces
     if l[0] == 'f':
-	    if len(l) == 5:
-	      obj['faces'].append((int(l[1]), int(l[2]), int(l[3]), int(l[4])))
-	    elif len(l) == 4:
-	      obj['faces'].append((int(l[1]), int(l[2]), int(l[3])))
-	    else:
-	      print "Illegal condition"
-	      exit(1)
+      if len(l) == 5:
+        obj['faces'].append((int(l[1]), int(l[2]), int(l[3]), int(l[4])))
+      elif len(l) == 4:
+        obj['faces'].append((int(l[1]), int(l[2]), int(l[3])))
+      else:
+        print "Illegal condition"
+        exit(1)
     # handle vertices
     elif l[0] == 'v':
       if len(l) == 4:
         obj['vertices'][vertex_count] = (float(l[1]), float(l[2]), float(l[3]))
         vertex_count += 1
       else:
-				print "Illegal condition"
-				exit(1)
+        print "Illegal condition"
+        exit(1)
     else:
       print "Illegal condition"
       exit(1)
@@ -76,7 +76,6 @@ def convertToImage(params, filename):
 
   # load object from obj file
   obj = loadObjectFromObj(filename)
-  print obj
 
 def main():
   """ Main runner. 
