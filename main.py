@@ -188,6 +188,7 @@ def projectVerticesTo2D(vertices, params):
     img_vertices = {}
     for v_no, vertex in vertices.items():
         x, y, z = vertex
+        z = -z
         x_ = (z*xv + x*zv)/(z + zv)
         y_ = (z*yv + y*zv)/(z + zv)
         img_vertices[v_no] = (x_, y_, 0)
