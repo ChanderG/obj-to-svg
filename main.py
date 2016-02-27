@@ -14,6 +14,7 @@ Assumptions:
 """
 
 import optparse
+from math import radians, cos, sin
 
 def loadObjectFromObj(filename):
     """ Load object from obj file into custom structure.
@@ -67,6 +68,94 @@ def loadObjectFromObj(filename):
             print l
             print "Illegal condition: Unrecogonized line found"
             exit(1)
+
+    return obj
+
+def findBoundingCube(vertices):
+    """ Return max and min x, y, z of object in that order.
+    """
+
+    # init all to first vertex found
+    max_x, min_x = vertices[1][0], vertices[1][0]
+    max_y, min_y = vertices[1][1], vertices[1][1]
+    max_z, min_z = vertices[1][2], vertices[1][2]
+
+    for v in vertices.keys():
+        x, y, z = vertices[v]
+
+        if x > max_x:
+            max_x = x
+        if x < min_x:
+            min_x = x
+
+        if y > max_y:
+            max_y = y
+        if y < min_y:
+            min_y = y
+
+        if z > max_z:
+            max_z = z
+        if z < min_z:
+            min_z = z
+
+    return max_x, min_x, max_y, min_y, max_z, min_z
+
+def rotateAboutX(vertices, degree):
+    """ Rotate vertices about x axis by degree in anti-clockwise direction. """
+    angle = radians(degree)
+    ca, sa = cos(angle), sin(angle)
+
+    for v in vertices.keys():
+        x, y, z = vertices[v]
+        vertices[v] = x, ca*y - sa*z, sa*y + ca*z
+
+    return vertices
+
+def rotateAboutY(vertices, degree):
+    """ Rotate vertices about y axis by degree in anti-clockwise direction. """
+    angle = radians(degree)
+    ca, sa = cos(angle), sin(angle)
+
+    for v in vertices.keys():
+        x, y, z = vertices[v]
+        vertices[v] = ca*x + sa*z, y, -1*sa*x + ca*z
+
+    return vertices
+
+def rotateAboutZ(vertices, degree):
+    """ Rotate vertices about z axis by degree in anti-clockwise direction. """
+    angle = radians(degree)
+    ca, sa = cos(angle), sin(angle)
+
+    for v in vertices.keys():
+        x, y, z = vertices[v]
+        vertices[v] = ca*x - sa*y, sa*x + ca*y, z
+
+    return vertices
+
+def rotateObject(obj, params):
+    """ Rotate object around center of bounding cube in all 3 axis as necessary.
+
+    Returns new obj hash.
+    """
+    vertices = obj["vertices"]
+
+    # find bounding cube
+    max_x, min_x, max_y, min_y, max_z, min_z = findBoundingCube(vertices)
+
+    # find center of said cube
+    cx, cy, cz = (max_x + min_x)/2, (max_y + min_y)/2, (max_z + min_z)/2
+
+    # translate object such that center is at 0,0,0
+    vertices = translateVertices(vertices, -1*cx, -1*cy, -1*cz)
+
+    # rotate about 3 axis one by one
+    vertices = rotateAboutX(vertices, params["rx"])
+    vertices = rotateAboutY(vertices, params["ry"])
+    vertices = rotateAboutZ(vertices, params["rz"])
+
+    # translate final object back to actual center
+    vertices = translateVertices(vertices, cx, cy, cz)
 
     return obj
 
@@ -280,14 +369,14 @@ def moveBackInZ(obj, params):
             exit(1)
         return (obj, params)
 
-def translateVertices(vertices, x, y):
+def translateVertices(vertices, x, y, z = 0):
     """ Translate vertices by x, y.
 
     Add x,y to each vertex.
     """
     for v in vertices.keys():
         x_, y_, z_ = vertices[v]
-        vertices[v] = (x_ + x, y_ + y, z_)
+        vertices[v] = (x_ + x, y_ + y, z_ + z)
 
     return vertices
 
@@ -380,6 +469,7 @@ def convertToImage(params, filename):
   obj = loadObjectFromObj(filename)
 
   # object roations etc here
+  obj = rotateObject(obj, params)
 
   # back face culling
   print "Back face culling..."
@@ -416,6 +506,10 @@ def main():
   parser.add_option("-H", "--vh", type="int", dest="vh", default="100", help="viewport height")
   parser.add_option("-W", "--vw", type="int", dest="vw", default="100", help="viewport width")
 
+  parser.add_option("-i", "--rx", type="int", dest="rx", default="0", help="rotation about x axis in degrees in anticlockwise direction")
+  parser.add_option("-j", "--ry", type="int", dest="ry", default="0", help="rotation about y axis in degrees in anticlockwise direction")
+  parser.add_option("-k", "--rz", type="int", dest="rz", default="0", help="rotation about z axis in degrees in anticlockwise direction")
+
   (options, args) = parser.parse_args()
 
   if len(args) != 1:
@@ -427,6 +521,10 @@ def main():
   params['vz'] = options.vz
   params['H'] = options.vh
   params['W'] = options.vw
+
+  params['rx'] = options.rx
+  params['ry'] = options.ry
+  params['rz'] = options.rz
 
   print "Using values: "
   print params
