@@ -282,9 +282,9 @@ def moveBackInZ(obj, params):
         # move vertices and viewpoint
         for k in obj["vertices"].keys():
             x_, y_, z_ = obj["vertices"][k]
-            obj["vertices"][k] = (x_, y_, z_ - max_z)
+            obj["vertices"][k] = (x_, y_, z_ - (max_z+1))
 
-        params["vz"] -= max_z
+        params["vz"] -= max_z+1
 
         # sanity check new viewpoint
         if params["vz"] < 0:
@@ -360,8 +360,14 @@ def fitInViewPort(img, params):
     vertices = negateY(vertices)
 
     # scale to fit in viewport
-    scale_x = (params["W"] - 20)/(right_x - left_x)
-    scale_y = (params["H"] - 20)/(-1*(bottom_y - top_y))
+    if right_x == left_x:
+        scale_x = 1
+    else:
+        scale_x = (params["W"] - 20)/(right_x - left_x)
+    if bottom_y == top_y:
+        scale_y = 1
+    else:
+        scale_y = (params["H"] - 20)/(-1*(bottom_y - top_y))
     vertices = scaleVertices(vertices, scale_x, scale_y)
 
     # translate to 10, 10
