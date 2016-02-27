@@ -258,6 +258,36 @@ def dummyScaleUp(img):
     img["vertices"] = new_vert
     return img
 
+def moveBackInZ(obj, params):
+    """ Move back entire object and view point to ensure ebject is in negative z.
+
+    Return new (obj, params).
+    """
+
+    # loop over vertices and find the max z 
+    max_z = 0
+    for v in obj["vertices"].values():
+        x_, y_, z_ = v
+        if z_ > max_z:
+            max_z = z_
+
+    if max_z == 0:
+        # no transformation necessary
+        return (obj, params)
+    else:
+        # move vertices and viewpoint
+        for k in obj["vertices"].keys():
+            x_, y_, z_ = obj["vertices"][k]
+            obj["vertices"][k] = (x_, y_, z_ - max_z)
+
+        params["vz"] -= max_z
+
+        # sanity check new viewpoint
+        if params["vz"] < 0:
+            print "View point in negative z after z adjustment for viewing."
+            exit(1)
+        return (obj, params)
+
 def convertToImage(params, filename):
   """ Convert obj object to svg image. 
   
@@ -279,6 +309,7 @@ def convertToImage(params, filename):
   obj = backFaceCull(obj, params)
 
   # move back object to negative z here
+  obj, params = moveBackInZ(obj, params)
 
   # project to 2d in the right order
   print "Projecting to 2d..."
