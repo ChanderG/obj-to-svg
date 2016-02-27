@@ -39,7 +39,11 @@ def loadObjectFromObj(filename):
     vertex_count = 1
 
     for line in obj_raw_lines:
+        # ignore comments in obj file
         if line.strip(' ')[0] == '#':
+            continue
+        # ignore '\r'
+        if line.strip(' ')[0] == '\r':
             continue
         l = filter(lambda x: x!= '', line.split(' '))
         # handle faces
@@ -61,7 +65,7 @@ def loadObjectFromObj(filename):
                 exit(1)
         else:
             print l
-            print "Illegal condition: "
+            print "Illegal condition: Unrecogonized line found"
             exit(1)
 
     return obj
