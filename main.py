@@ -292,6 +292,85 @@ def moveBackInZ(obj, params):
             exit(1)
         return (obj, params)
 
+def translateVertices(vertices, x, y):
+    """ Translate vertices by x, y.
+
+    Add x,y to each vertex.
+    """
+    for v in vertices.keys():
+        x_, y_, z_ = vertices[v]
+        vertices[v] = (x_ + x, y_ + y, z_)
+
+    return vertices
+
+def negateY(vertices):
+    """ Negate vertices y coordinate.
+
+    As svg as a southeast facing coordinate system.
+    """
+    for v in vertices.keys():
+        x_, y_, z_ = vertices[v]
+        vertices[v] = (x_, -1*y_, z_)
+
+    return vertices
+
+def scaleVertices(vertices, sx, sy):
+    """ Scale by given dimensions.
+
+    Simply multiply all corrdinates by given scale factor.
+    """
+    for v in vertices.keys():
+        x_, y_, z_ = vertices[v]
+        vertices[v] = (x_*sx, y_*sy, z_)
+
+    return vertices
+
+def fitInViewPort(img, params):
+    """ Fit image to view port.
+
+    Move northwest most point to 0, 0
+    Flip y to -y.
+    Scale by vh-2/bottom_y and vw-2/right_x
+    Translate by +1,+1
+    """
+
+    # assuming there is atleast one vertice
+    left_x, right_x = img["vertices"][1][0], img["vertices"][1][0]
+    top_y, bottom_y = img["vertices"][1][1], img["vertices"][1][1]
+
+    for v in img["vertices"].values():
+        x, y, _ = v
+
+        if x < left_x:
+            left_x = x
+        if x > right_x:
+            right_x = x
+
+        if y < bottom_y:
+            bottom_y = y
+        if y > top_y:
+            top_y = y
+
+    vertices = img["vertices"]
+
+    # move northwest most point to (0, 0)
+    vertices = translateVertices(vertices, -1*left_x, -1*top_y)
+
+    # negate y
+    vertices = negateY(vertices)
+
+    # scale to fit in viewport
+    scale_x = (params["W"] - 20)/(right_x - left_x)
+    scale_y = (params["H"] - 20)/(-1*(bottom_y - top_y))
+    vertices = scaleVertices(vertices, scale_x, scale_y)
+
+    # translate to 10, 10
+    vertices = translateVertices(vertices, 10, 10)
+
+    # return new image
+    img["vertices"] = vertices
+    return img
+
 def convertToImage(params, filename):
   """ Convert obj object to svg image. 
   
@@ -320,9 +399,10 @@ def convertToImage(params, filename):
   img = project2D(obj, params)
 
   # scale up/down etc to fit in viewport here
+  img = fitInViewPort(img, params)
 
   # dummy scale up to make stuff visible
-  img = dummyScaleUp(img)
+  #img = dummyScaleUp(img)
 
   # create svg from 2d image
   print "Creating svg image: {0}".format("output.svg")
