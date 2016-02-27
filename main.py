@@ -250,18 +250,6 @@ def drawSvg(img, filename):
     f.write('</svg>')
     f.close()
 
-def dummyScaleUp(img):
-    """ Dummy placeholder scaleup for test purpose. """
-
-    orig_vert = img["vertices"]
-    new_vert = {}
-    for v in orig_vert.keys():
-        x, y, z =  orig_vert[v]
-        v_ = int(100*x), int(100*y), int(100*z)
-        new_vert[v] = v_
-    img["vertices"] = new_vert
-    return img
-
 def moveBackInZ(obj, params):
     """ Move back entire object and view point to ensure ebject is in negative z.
 
@@ -398,6 +386,7 @@ def convertToImage(params, filename):
   obj = backFaceCull(obj, params)
 
   # move back object to negative z here
+  print "Adjusting z, moving object to object space..."
   obj, params = moveBackInZ(obj, params)
 
   # project to 2d in the right order
@@ -405,10 +394,8 @@ def convertToImage(params, filename):
   img = project2D(obj, params)
 
   # scale up/down etc to fit in viewport here
+  print "Scaling to viewport..."
   img = fitInViewPort(img, params)
-
-  # dummy scale up to make stuff visible
-  #img = dummyScaleUp(img)
 
   # create svg from 2d image
   print "Creating svg image: {0}".format("output.svg")
