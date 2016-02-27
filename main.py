@@ -488,8 +488,8 @@ def convertToImage(params, filename):
   img = fitInViewPort(img, params)
 
   # create svg from 2d image
-  print "Creating svg image: {0}".format("output.svg")
-  drawSvg(img, 'output.svg')
+  print "Creating svg image: {0}".format(params["outfile"])
+  drawSvg(img, params["outfile"])
 
 def main():
   """ Main runner. 
@@ -510,6 +510,8 @@ def main():
   parser.add_option("-j", "--ry", type="int", dest="ry", default="0", help="rotation about y axis in degrees in anticlockwise direction")
   parser.add_option("-k", "--rz", type="int", dest="rz", default="0", help="rotation about z axis in degrees in anticlockwise direction")
 
+  parser.add_option("-o", "--output", type="string", dest="outfile", default="output.svg", help="name of file to ouput svg drawing to")
+
   (options, args) = parser.parse_args()
 
   if len(args) != 1:
@@ -525,6 +527,8 @@ def main():
   params['rx'] = options.rx
   params['ry'] = options.ry
   params['rz'] = options.rz
+
+  params['outfile'] = options.outfile
 
   print "Using values: "
   print params
