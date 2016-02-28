@@ -407,7 +407,7 @@ def fitInViewPort(img, params):
 
     Move northwest most point to 0, 0
     Flip y to -y.
-    Scale by vh-2/bottom_y and vw-2/right_x
+    Scale by max of (vh-2/bottom_y ,vw-2/right_x) -- preserve shape
     Translate by +1,+1
     """
 
@@ -436,15 +436,20 @@ def fitInViewPort(img, params):
     # negate y
     vertices = negateY(vertices)
 
+    # scale to min of height/width
+    l = min(params["W"], params["H"])
+
     # scale to fit in viewport
     if right_x == left_x:
         scale_x = 1
     else:
-        scale_x = (params["W"] - 20)/(right_x - left_x)
+        scale_x = (l - 20)/(right_x - left_x)
     if bottom_y == top_y:
         scale_y = 1
     else:
-        scale_y = (params["H"] - 20)/(-1*(bottom_y - top_y))
+        scale_y = (l - 20)/(-1*(bottom_y - top_y))
+
+
     vertices = scaleVertices(vertices, scale_x, scale_y)
 
     # translate to 10, 10
