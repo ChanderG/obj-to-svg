@@ -3,8 +3,9 @@ Create a 2d svg image from a 3d object.
 
 User input:
   1. Viewpoint
-  2. Input obj file.
+  2. Input obj file
   3. Dimensions of viewport
+  4. Rotations about each axes
 
 Output:
   1. svg file
