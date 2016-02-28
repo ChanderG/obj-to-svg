@@ -364,8 +364,8 @@ def moveBackInZ(obj, params):
         params["vz"] -= max_z+1
 
         # sanity check new viewpoint
-        if params["vz"] < 0:
-            print "View point in negative z after z adjustment for viewing."
+        if params["vz"] <= 0:
+            print "View point in negative (or 0) z after z adjustment for viewing."
             exit(1)
         return (obj, params)
 
