@@ -312,11 +312,13 @@ def project2D(obj, params):
 
     return img
 
-def drawSvg(img, filename):
+def drawSvg(img, filename, w, h):
     """ Draw svg image from img structure.
 
     img -- struct of image data
     filename -- output file name
+    w -- width of svg
+    h -- height of svg
 
     Creates a svg file called -- filename.svg containing required image.
     """
@@ -325,6 +327,9 @@ def drawSvg(img, filename):
     f = open(filename, 'w')
     f.write('<svg xmlns="http://www.w3.org/2000/svg" version="1.1">')
     f.write('\n')
+
+    # draw border around svg
+    f.write('<rect x="0" y="0" width="{0}" height="{1}" style="fill:white;stroke:black;stroke-width:1"/>\n'.format(w, h))
 
     for face in img["faces"]:
         # format the point string
@@ -495,7 +500,7 @@ def convertToImage(params, filename):
 
   # create svg from 2d image
   print "Creating svg image: {0}".format(params["outfile"])
-  drawSvg(img, params["outfile"])
+  drawSvg(img, params["outfile"], params["W"], params["H"])
 
 def main():
   """ Main runner. 
